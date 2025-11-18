@@ -1,0 +1,18 @@
+{
+  "name": "navrang-navratri-ecommerce",
+  "version": "1.0.0",
+  "description": "A complete Navratri e-commerce website with user and seller features",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "keywords": ["navratri", "ecommerce", "react", "nodejs", "mongodb"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
