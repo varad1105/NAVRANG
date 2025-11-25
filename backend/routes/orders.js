@@ -24,14 +24,30 @@ router.post('/', [
   body('shippingAddress.street').notEmpty().withMessage('Street address is required'),
   body('shippingAddress.city').notEmpty().withMessage('City is required'),
   body('shippingAddress.state').notEmpty().withMessage('State is required'),
-  body('shippingAddress.pincode').matches(/^[0-9]{6}$/).withMessage('Please provide a valid 6-digit pincode'),
-  body('shippingAddress.phone').matches(/^[0-9]{10}$/).withMessage('Please provide a valid 10-digit phone number'),
-  body('paymentMethod').isIn(['cod', 'online', 'demo']).withMessage('Invalid payment method')
+  body('shippingAddress.pincode').custom((value) => {
+    const pincodeMatch = value.match(/\d{6}/);
+    if (!pincodeMatch) {
+      throw new Error('Please provide a valid 6-digit pincode');
+    }
+    return true;
+  }),
+  body('shippingAddress.phone').custom((value) => {
+    const phoneMatch = value.match(/\d{10}/);
+    if (!phoneMatch) {
+      throw new Error('Please provide a valid 10-digit phone number');
+    }
+    return true;
+  }),
+  body('paymentMethod').isIn(['cod', 'online', 'demo', 'razorpay']).withMessage('Invalid payment method'),
+  body('totalAmount').isNumeric().withMessage('Total amount must be a number')
 ], async (req, res) => {
   try {
+    console.log('📦 Creating order with data:', JSON.stringify(req.body, null, 2));
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -39,10 +55,9 @@ router.post('/', [
       });
     }
 
-    const { items, shippingAddress, paymentMethod, notes } = req.body;
+    const { items, shippingAddress, paymentMethod, notes, totalAmount } = req.body;
 
-    // Validate all products and calculate total
-    let totalAmount = 0;
+    // Validate all products and use provided total amount
     const validatedItems = [];
 
     for (const item of items) {
@@ -109,8 +124,6 @@ router.post('/', [
       } else {
         itemPrice = product.price.rental[item.rentalPeriod] * item.quantity;
       }
-
-      totalAmount += itemPrice;
 
       validatedItems.push({
         product: product._id,

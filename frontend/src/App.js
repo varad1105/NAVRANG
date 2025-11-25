@@ -23,6 +23,7 @@ import AddProduct from './pages/seller/AddProduct';
 import EditProduct from './pages/seller/EditProduct';
 import Checkout from './pages/Checkout';
 import DemoPayment from './pages/DemoPayment';
+import RazorpayPayment from './pages/RazorpayPayment';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
 import About from './pages/About';
@@ -60,7 +61,8 @@ function App() {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/payment/demo" element={<DemoPayment />} />
                   <Route path="/payment/:orderId" element={<DemoPayment />} />
-                  <Route path="/payment/success" element={<PaymentSuccess />} />
+                  <Route path="/razorpay-payment" element={<RazorpayPayment />} />
+                  <Route path="/payment-success" element={<PaymentSuccess />} />
                   <Route path="/payment/failed" element={<PaymentFailed />} />
                   
                   {/* Protected Seller Routes */}

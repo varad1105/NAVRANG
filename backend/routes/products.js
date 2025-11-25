@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, query, validationResult } = require('express-validator');
 const Product = require('../models/Product');
+const Newsletter = require('../models/newsletter');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -380,6 +381,117 @@ router.post('/:id/reviews', protect, [
     res.status(500).json({
       success: false,
       message: 'Server error while adding review'
+    });
+  }
+});
+
+// Subscribe to newsletter
+router.post('/subscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Check if email already exists
+    const existingSubscriber = await Newsletter.findOne({ email });
+
+    if (existingSubscriber) {
+      if (existingSubscriber.isActive) {
+        return res.status(400).json({
+          success: false,
+          message: 'This email is already subscribed'
+        });
+      } else {
+        // Reactivate subscription
+        existingSubscriber.isActive = true;
+        existingSubscriber.unsubscribedAt = null;
+        existingSubscriber.subscribedAt = new Date();
+        await existingSubscriber.save();
+
+        return res.status(200).json({
+          success: true,
+          message: 'Successfully resubscribed to newsletter',
+          data: existingSubscriber
+        });
+      }
+    }
+
+    // Create new subscriber
+    const newSubscriber = await Newsletter.create({ email });
+
+    res.status(201).json({
+      success: true,
+      message: 'Successfully subscribed to newsletter',
+      data: newSubscriber
+    });
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to subscribe to newsletter'
+    });
+  }
+});
+
+// Unsubscribe from newsletter
+router.post('/unsubscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    const subscriber = await Newsletter.findOne({ email });
+
+    if (!subscriber) {
+      return res.status(404).json({
+        success: false,
+        message: 'Email not found in our newsletter'
+      });
+    }
+
+    subscriber.isActive = false;
+    subscriber.unsubscribedAt = new Date();
+    await subscriber.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully unsubscribed from newsletter',
+      data: subscriber
+    });
+  } catch (error) {
+    console.error('Newsletter unsubscribe error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to unsubscribe from newsletter'
+    });
+  }
+});
+
+// Get all active subscribers (Admin only)
+router.get('/subscribers', async (req, res) => {
+  try {
+    const subscribers = await Newsletter.find({ isActive: true }).sort({ subscribedAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: subscribers.length,
+      data: subscribers
+    });
+  } catch (error) {
+    console.error('Get subscribers error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch subscribers'
     });
   }
 });

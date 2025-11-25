@@ -1,83 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Star, ShoppingBag, Users, TrendingUp, ArrowRight, Sparkles, Heart } from 'lucide-react';
-import { getPlaceholderImage } from '../utils/imageUtils';
+import { ShoppingBag, Users, TrendingUp, Award, Heart } from 'lucide-react';
+import womenCategoryImage from '../assets/images/1.jpg';
+import menCategoryImage from '../assets/images/3.jpg';
+import kidsCategoryImage from '../assets/images/2.jpg';
+import AccessoriesCategoryImage from '../assets/images/unnamed.jpg';
+import navLogo from '../assets/images/navlogo.png';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading featured products
-    const mockFeaturedProducts = [
-      {
-        _id: '1',
-        name: 'Traditional Navratri Chaniya Choli',
-        description: 'Beautiful hand-embroidered chaniya choli with mirror work',
-        price: { purchase: 2999 },
-        images: [{ url: getPlaceholderImage(300, 400, 'Chaniya+Choli') }],
-        rating: { average: 4.5, count: 23 },
-        category: 'women'
-      },
-      {
-        _id: '2',
-        name: 'Designer Kediyu for Men',
-        description: 'Traditional Gujarati kediyu with modern design',
-        price: { purchase: 1899 },
-        images: [{ url: getPlaceholderImage(300, 400, 'Kediyu') }],
-        rating: { average: 4.3, count: 18 },
-        category: 'men'
-      },
-      {
-        _id: '3',
-        name: 'Kids Navratri Special Dress',
-        description: 'Colorful and comfortable dress for young dancers',
-        price: { purchase: 1299 },
-        images: [{ url: getPlaceholderImage(300, 400, 'Kids+Dress') }],
-        rating: { average: 4.7, count: 31 },
-        category: 'kids'
-      },
-      {
-        _id: '4',
-        name: 'Fusion Garba Outfit',
-        description: 'Modern twist to traditional garba attire',
-        price: { purchase: 2499 },
-        images: [{ url: getPlaceholderImage(300, 400, 'Fusion+Wear') }],
-        rating: { average: 4.6, count: 27 },
-        category: 'women'
-      }
-    ];
-
-    setTimeout(() => {
-      setFeaturedProducts(mockFeaturedProducts);
-      setLoading(false);
-    }, 1000);
-  }, []);
 
   const categories = [
     {
       name: 'Women',
-      image: 'https://picsum.photos/seed/navrangwomen/400/300.jpg',
+      image: womenCategoryImage,
       link: '/products?category=women',
       description: 'Traditional & Fusion Wear'
     },
     {
       name: 'Men',
-      image: 'https://picsum.photos/seed/navrangmen/400/300.jpg',
+      image: menCategoryImage,
       link: '/products?category=men',
       description: 'Kediyu & Traditional Attire'
     },
     {
       name: 'Kids',
-      image: 'https://picsum.photos/seed/navrangkids/400/300.jpg',
+      image: kidsCategoryImage,
       link: '/products?category=kids',
       description: 'Colorful Kids Collection'
     },
     {
       name: 'Accessories',
-      image: 'https://picsum.photos/seed/navrangaccessories/400/300.jpg',
+      image: AccessoriesCategoryImage,
       link: '/products?category=accessories',
       description: 'Jewelry & More'
     }
@@ -101,22 +56,28 @@ const Home = () => {
     }
   ];
 
-  const StarRating = ({ rating, count }) => {
-    return (
-      <div className="flex items-center space-x-1">
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              size={16}
-              className={star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
-            />
-          ))}
-        </div>
-        <span className="text-sm text-gray-600">({count})</span>
-      </div>
-    );
-  };
+  const aboutHighlights = [
+    {
+      icon: <ShoppingBag className="w-6 h-6" />,
+      title: 'Authenticity',
+      description: 'Genuine traditional designs that celebrate our cultural heritage'
+    },
+    {
+      icon: <Heart className="w-6 h-6" />,
+      title: 'Quality',
+      description: 'Premium fabrics and craftsmanship that ensure comfort and durability'
+    },
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: 'Community',
+      description: 'Supporting local artisans and promoting traditional craftsmanship'
+    },
+    {
+      icon: <Award className="w-6 h-6" />,
+      title: 'Excellence',
+      description: 'Committed to providing the best shopping experience and service'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,14 +99,20 @@ const Home = () => {
         <div className="festive-pattern absolute inset-0 opacity-10"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="text-center">
+            {/* Logo Section */}
             <div className="flex justify-center mb-6">
-              <Sparkles className="w-12 h-12 text-orange-500 animate-pulse" />
+              <img
+                src={navLogo}
+                alt="Navrang Logo"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-lg hover:scale-110 transition-transform duration-300"
+              />
             </div>
+
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
-              <span className="festive-gradient-text">Navrang Navratri</span>
+              <span className="festive-gradient-text">Navrang</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto">
-              Celebrate the festival of colors with our exquisite collection of traditional and fusion Navratri outfits
+              Celebrate the festival of colors with our exquisite collection of traditional and fusion festive outfits
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -235,79 +202,74 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-16 bg-white">
+      {/* About Us Preview Section */}
+      <section className="py-16" style={{ backgroundColor: '#E6EFF4' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Featured Collections
-            </h2>
-            <p className="text-lg text-gray-600">
-              Handpicked favorites for this Navratri season
-            </p>
-          </div>
-          
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="festive-spinner"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Left - Text Content */}
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                About <span className="festive-gradient-text">Navrang</span>
+              </h2>
+              
+              <p className="text-gray-700 text-lg mb-4">
+                We are a team of three TY B.Tech students passionate about technology, creativity, and solving real-world problems through innovative web solutions.
+              </p>
+              
+              <p className="text-gray-700 text-lg mb-8">
+                Our goal is to create a platform that is simple, user-friendly, and meaningful for users. This project reflects our teamwork, dedication, and continuous effort to learn and grow as aspiring engineers.
+              </p>
+
+              <Link
+                to="/about"
+                className="inline-flex items-center space-x-2 btn-festive px-8 py-3 text-lg"
+              >
+                <span>Learn More About Us</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
-                <div key={product._id} className="festive-card bg-white rounded-lg shadow-md overflow-hidden">
-                  <Link to={`/products/${product._id}`}>
-                    <div className="product-gallery">
-                      <img
-                        src={product.images[0].url}
-                        alt={product.name}
-                        className="w-full h-64 object-cover"
-                      />
-                    </div>
-                  </Link>
-                  
-                  <div className="p-4">
-                    <Link to={`/products/${product._id}`}>
-                      <h3 className="font-semibold text-gray-900 mb-2 hover:text-orange-500 transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                      {product.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="price-badge">
-                        ₹{product.price.purchase}
-                      </div>
-                      <StarRating rating={Math.floor(product.rating.average)} count={product.rating.count} />
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <Link
-                        to={`/products/${product._id}`}
-                        className="flex-1 bg-orange-500 text-white text-center py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
-                      >
-                        View Details
-                      </Link>
-                      <button className="p-2 text-gray-600 hover:text-red-500 transition-colors">
-                        <Heart size={18} />
-                      </button>
-                    </div>
+
+            {/* Right - Values Grid */}
+            <div className="grid grid-cols-2 gap-6">
+              {aboutHighlights.map((highlight, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow text-center"
+                >
+                  <div className="flex justify-center text-orange-500 mb-3">
+                    {highlight.icon}
                   </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    {highlight.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {highlight.description}
+                  </p>
                 </div>
               ))}
             </div>
-          )}
-          
-          <div className="text-center mt-12">
-            <Link
-              to="/products"
-              className="inline-flex items-center space-x-2 text-orange-500 hover:text-orange-600 font-semibold text-lg"
-            >
-              <span>View All Products</span>
-              <ArrowRight size={20} />
-            </Link>
+          </div>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-8 text-white text-center">
+            <div>
+              <div className="text-3xl font-bold mb-2">50K+</div>
+              <div className="text-orange-100 text-sm">Happy Customers</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold mb-2">1000+</div>
+              <div className="text-orange-100 text-sm">Unique Designs</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold mb-2">500+</div>
+              <div className="text-orange-100 text-sm">Artisans Supported</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold mb-2">4.8★</div>
+              <div className="text-orange-100 text-sm">Customer Rating</div>
+            </div>
           </div>
         </div>
       </section>

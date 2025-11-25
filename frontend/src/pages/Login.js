@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, ShoppingBag, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ShoppingBag } from 'lucide-react';
+import navLogo from '../assets/images/navlogo.png';
 
 const Login = () => {
   const { login, isAuthenticated, loading, error, clearError } = useAuth();
@@ -66,8 +67,12 @@ const Login = () => {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center animate-float">
-              <Sparkles className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <img
+                src={navLogo}
+                alt="Navrang Logo"
+                className="w-12 h-12 object-contain"
+              />
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">

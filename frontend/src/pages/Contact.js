@@ -84,8 +84,8 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium text-gray-900">Office</h3>
                     <p className="text-gray-600">
-                      123, Festival Street<br />
-                      Navrati Nagar, Gujarat<br />
+                      123, Fashion street<br />
+                      Pune, Maharashtra<br />
                       India - 380001
                     </p>
                   </div>

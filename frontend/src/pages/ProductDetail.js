@@ -179,7 +179,8 @@ const ProductDetail = () => {
     const result = await addToCart(cartData.productId, cartData.quantity, cartData.size, cartData.type, cartData.rentalPeriod);
     
     if (result.success) {
-      navigate('/checkout');
+      // Navigate to checkout with Razorpay as default payment method
+      navigate('/checkout', { state: { defaultPaymentMethod: 'razorpay' } });
     } else {
       setError(result.error);
     }

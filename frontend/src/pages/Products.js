@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { Search, Filter, Heart, Star, Grid, List, ShoppingBag, X, ChevronDown } from 'lucide-react';
+import { Search, Filter, Heart, Star, Grid, List, ShoppingBag, X } from 'lucide-react';
 import { getFirstValidSize, getImageWithFallback } from '../utils/validation';
 
 const Products = () => {
@@ -34,22 +34,8 @@ const Products = () => {
     totalProducts: 0
   });
 
-  // Get initial filters from URL
-  useEffect(() => {
-    const initialFilters = {
-      category: searchParams.get('category') || '',
-      search: searchParams.get('search') || '',
-      subCategory: searchParams.get('subCategory') || '',
-      minPrice: searchParams.get('minPrice') || '',
-      maxPrice: searchParams.get('maxPrice') || '',
-      size: searchParams.get('size') || '',
-      sortBy: searchParams.get('sortBy') || 'newest'
-    };
-    setFilters(prev => ({ ...prev, ...initialFilters }));
-  }, [searchParams]);
-
-  // Fetch products
-  const fetchProducts = async (page = 1) => {
+  // Fetch products - wrapped in useCallback
+  const fetchProducts = useCallback(async (page = 1) => {
     try {
       setLoading(true);
       setError('');
@@ -70,11 +56,26 @@ const Products = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, api]);
 
+  // Get initial filters from URL
+  useEffect(() => {
+    const initialFilters = {
+      category: searchParams.get('category') || '',
+      search: searchParams.get('search') || '',
+      subCategory: searchParams.get('subCategory') || '',
+      minPrice: searchParams.get('minPrice') || '',
+      maxPrice: searchParams.get('maxPrice') || '',
+      size: searchParams.get('size') || '',
+      sortBy: searchParams.get('sortBy') || 'newest'
+    };
+    setFilters(prev => ({ ...prev, ...initialFilters }));
+  }, [searchParams]);
+
+  // Fetch products when filters change
   useEffect(() => {
     fetchProducts(1);
-  }, [filters]);
+  }, [fetchProducts]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -277,7 +278,7 @@ const Products = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Navratri Collection
+            Navrang Collection
           </h1>
           <p className="text-gray-600">
             Discover our authentic range of traditional and festive outfits
@@ -289,14 +290,16 @@ const Products = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
+                  <Search size={20} strokeWidth={1.5} />
+                </div>
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={filters.search || ''}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="form-input w-full pl-10"
+                  className="form-input w-full pl-14 pr-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:ring-0 focus:outline-none transition-colors placeholder-gray-400"
                 />
               </div>
             </div>

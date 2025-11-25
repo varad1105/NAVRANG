@@ -1,8 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import navLogo from '../assets/images/navlogo.png';
+import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
+  const { api } = useAuth();
+  const [email, setEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState({ type: '', text: '' });
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!email) {
+      setNewsletterMessage({ type: 'error', text: 'Please enter your email address' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setNewsletterMessage({ type: 'error', text: 'Please enter a valid email address' });
+      return;
+    }
+
+    try {
+      setNewsletterLoading(true);
+      setNewsletterMessage({ type: '', text: '' });
+
+      console.log('📧 Subscribing email:', email);
+      
+      // Make sure API endpoint is correct
+      const response = await api.post('/newsletter/subscribe', { email });
+
+      console.log('✅ Newsletter response:', response.data);
+
+      if (response.data.success) {
+        setNewsletterMessage({
+          type: 'success',
+          text: response.data.message || 'Successfully subscribed to newsletter!'
+        });
+        setEmail('');
+        setTimeout(() => setNewsletterMessage({ type: '', text: '' }), 5000);
+      }
+    } catch (error) {
+      console.error('📧 Newsletter error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to subscribe. Please try again.';
+      setNewsletterMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white">
       {/* Festive top border */}
@@ -13,8 +62,12 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">N</span>
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img
+                  src={navLogo}
+                  alt="Navrang Logo"
+                  className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
+                />
               </div>
               <span className="text-2xl font-bold">Navrang</span>
             </div>
@@ -23,16 +76,40 @@ const Footer = () => {
               Celebrate in style with our authentic collection.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <a 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-400 transition-colors"
+                aria-label="Facebook"
+              >
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-400 transition-colors"
+                aria-label="Instagram"
+              >
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <a 
+                href="https://twitter.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-400 transition-colors"
+                aria-label="Twitter"
+              >
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <a 
+                href="https://youtube.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-orange-400 transition-colors"
+                aria-label="YouTube"
+              >
                 <Youtube size={20} />
               </a>
             </div>
@@ -80,32 +157,32 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-orange-400">Customer Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/faq" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   Size Guide
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/shipping" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   Shipping & Delivery
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/returns" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   Returns & Exchanges
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/rental-policy" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   Rental Policy
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/payment" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   Payment Options
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
+                <Link to="/faq" className="text-gray-300 hover:text-orange-400 transition-colors text-sm">
                   FAQ
                 </Link>
               </li>
@@ -122,7 +199,12 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail size={18} className="text-orange-400" />
-                <span className="text-gray-300 text-sm">support@navrang.com</span>
+                <a 
+                  href="mailto:support@navrang.com"
+                  className="text-gray-300 hover:text-orange-400 transition-colors text-sm"
+                >
+                  support@navrang.com
+                </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin size={18} className="text-orange-400 mt-1" />
@@ -152,20 +234,43 @@ const Footer = () => {
             <p className="text-gray-300 text-sm mb-4">
               Get exclusive offers and be the first to know about new collections
             </p>
-            <form className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+            
+            {/* Newsletter Form */}
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
               <input
                 type="email"
                 placeholder="Enter your email address"
-                className="flex-1 px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-orange-400"
-                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all"
+                disabled={newsletterLoading}
               />
               <button
                 type="submit"
-                className="btn-festive px-6 py-2 rounded-lg"
+                disabled={newsletterLoading}
+                className="btn-festive px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center min-w-fit"
               >
-                Subscribe
+                {newsletterLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Subscribing...
+                  </>
+                ) : (
+                  'Subscribe'
+                )}
               </button>
             </form>
+
+            {/* Newsletter Message */}
+            {newsletterMessage.text && (
+              <div className={`mt-3 p-3 rounded-lg text-sm ${
+                newsletterMessage.type === 'success'
+                  ? 'bg-green-500/20 text-green-300 border border-green-500/50'
+                  : 'bg-red-500/20 text-red-300 border border-red-500/50'
+              }`}>
+                {newsletterMessage.text}
+              </div>
+            )}
           </div>
         </div>
 
@@ -176,13 +281,13 @@ const Footer = () => {
               © 2024 Navrang Navratri. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
-              <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <Link to="/privacy" className="text-gray-400 hover:text-orange-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <Link to="/terms" className="text-gray-400 hover:text-orange-400 transition-colors">
                 Terms of Service
               </Link>
-              <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
+              <Link to="/cookies" className="text-gray-400 hover:text-orange-400 transition-colors">
                 Cookie Policy
               </Link>
             </div>

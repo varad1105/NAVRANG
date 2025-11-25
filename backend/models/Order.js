@@ -61,14 +61,17 @@ const orderSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded'],
+    enum: ['pending', 'completed', 'failed'],
     default: 'pending'
   },
   paymentMethod: {
     type: String,
-    enum: ['cod', 'online', 'demo'],
-    default: 'cod'
+    enum: ['razorpay', 'cod'], // cash on delivery
+    default: 'razorpay'
   },
+  razorpayOrderId: String,
+  razorpayPaymentId: String,
+  razorpaySignature: String,
   shippingAddress: {
     street: {
       type: String,
@@ -106,31 +109,13 @@ const orderSchema = new mongoose.Schema({
   },
   // Demo payment fields
   demoPaymentId: String,
-  demoPaymentStatus: String
-}, {
-  timestamps: true
-});
-
-// Generate order number before saving
-orderSchema.pre('save', async function(next) {
-  if (this.isNew && !this.orderNumber) {
-    const count = await this.constructor.countDocuments();
-    this.orderNumber = `NR${String(count + 1).padStart(6, '0')}`;
-  }
-  next();
-});
-
-// Calculate rental dates if it's a rental order
-orderSchema.pre('save', function(next) {
-  if (this.isModified('items') && this.items.some(item => item.type === 'rental')) {
-    const rentalItem = this.items.find(item => item.type === 'rental');
-    if (rentalItem && rentalItem.rentalPeriod) {
-      this.rentalStartDate = new Date();
-      const days = parseInt(rentalItem.rentalPeriod.split('-')[0]);
-      this.rentalEndDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    }
-  }
-  next();
-});
+  demoPaymentStatus: String,
+  // Razorpay payment fields
+  razorpayOrderId: String,
+  razorpayPaymentId: String,
+  razorpaySignature: String,
+  paymentDate: Date,
+  paymentError: String
+}, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

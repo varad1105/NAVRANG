@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { 
@@ -11,13 +11,15 @@ import {
   MapPin,
   User,
   Phone,
-  Mail
+  Mail,
+  Smartphone
 } from 'lucide-react';
 
 const Checkout = () => {
   const { user, isAuthenticated, api } = useAuth();
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,13 +46,21 @@ const Checkout = () => {
       return;
     }
 
+    // Set default payment method from location state (for Buy Now)
+    if (location.state?.defaultPaymentMethod) {
+      setOrderData(prev => ({
+        ...prev,
+        paymentMethod: location.state.defaultPaymentMethod
+      }));
+    }
+
     // Pre-fill order data with cart items
     const orderItems = cart.map(item => ({
       product: item.product._id,
       name: item.product.name,
       quantity: item.quantity,
       size: item.size,
-      color: item.product.colors[0],
+      color: item.color || (item.product.colors && item.product.colors[0]) || 'Default',
       price: item.type === 'rental' 
         ? item.product.price.rental[item.rentalPeriod] * item.quantity
         : item.product.price.purchase * item.quantity,
@@ -67,7 +77,7 @@ const Checkout = () => {
         phone: user.phone || ''
       }
     }));
-  }, [isAuthenticated, navigate, cart, user]);
+  }, [isAuthenticated, navigate, cart, user, location.state]);
 
   const calculateSubtotal = () => {
     return orderData.items.reduce((total, item) => total + item.price, 0);
@@ -100,15 +110,29 @@ const Checkout = () => {
       return false;
     }
 
-    if (!/^[0-9]{6}$/.test(shippingAddress.pincode)) {
+    // Extract 6-digit pincode from the input (handles formats like "pune-15", "411015", etc.)
+    const pincodeMatch = shippingAddress.pincode.match(/\d{6}/);
+    if (!pincodeMatch) {
       setError('Please enter a valid 6-digit pincode');
       return false;
     }
 
-    if (!/^[0-9]{10}$/.test(shippingAddress.phone)) {
+    // Extract 10-digit phone number from the input
+    const phoneMatch = shippingAddress.phone.match(/\d{10}/);
+    if (!phoneMatch) {
       setError('Please enter a valid 10-digit phone number');
       return false;
     }
+
+    // Update the fields with cleaned values
+    setOrderData(prev => ({
+      ...prev,
+      shippingAddress: {
+        ...prev.shippingAddress,
+        pincode: pincodeMatch[0],
+        phone: phoneMatch[0]
+      }
+    }));
 
     return true;
   };
@@ -124,10 +148,13 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      const response = await api.post('/orders', {
+      const orderRequest = {
         ...orderData,
         totalAmount: calculateTotal()
-      });
+      };
+      console.log('📦 Sending order data:', orderRequest);
+      const response = await api.post('/orders', orderRequest);
+      console.log('✅ Order created:', response.data);
 
       // Clear cart after successful order
       await clearCart();
@@ -137,6 +164,8 @@ const Checkout = () => {
         navigate(`/orders/${response.data.data.order._id}`);
       } else if (orderData.paymentMethod === 'demo') {
         navigate(`/payment/${response.data.data.order._id}`);
+      } else if (orderData.paymentMethod === 'razorpay') {
+        navigate(`/razorpay-payment/${response.data.data.order._id}`);
       } else {
         navigate(`/payment/${response.data.data.order._id}`);
       }
@@ -342,6 +371,26 @@ const Checkout = () => {
                     <div>
                       <div className="font-medium text-gray-900">Online Payment</div>
                       <div className="text-sm text-gray-500">Credit/Debit Card, UPI, Net Banking</div>
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="razorpay"
+                    checked={orderData.paymentMethod === 'razorpay'}
+                    onChange={(e) => setOrderData(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                      <Smartphone size={16} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">Razorpay</div>
+                      <div className="text-sm text-gray-500">Credit/Debit Card, UPI, Net Banking, Wallets</div>
                     </div>
                   </div>
                 </label>

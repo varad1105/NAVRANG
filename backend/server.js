@@ -2,83 +2,58 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const userRoutes = require('./routes/users');
-const sellerRoutes = require('./routes/sellers');
-const orderRoutes = require('./routes/orders');
-const chatRoutes = require('./routes/chat');
 
 const app = express();
 
-// Security middleware
+// Security
 app.use(helmet());
 
-
-// CORS configuration
+// CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-production-domain.com' 
-    : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production'
+    ? 'https://your-production-domain.com'
+    : ['http://localhost:3000', 'http://192.168.0.102:3000'],
   credentials: true
 }));
 
-// Body parser middleware
+// Body parser
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files for uploads
+// Static
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/sellers', sellerRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/sellers', require('./routes/sellers'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/chat', require('./routes/chat'));
+app.use('/api/razorpay', require('./routes/razorpay'));
+app.use('/api/newsletter', require('./routes/newsletter'));  // ← NEWSLETTER ROUTE
 
-// Health check route
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Navrang API is running' });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
-// 404 handler
+// 404
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: 'Route not found' 
-  });
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// DB connect
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((error) => {
+    console.error("Database connection error:", error);
+    process.exit(1);
   });
-})
-.catch((error) => {
-  console.error('Database connection error:', error);
-  process.exit(1);
-});
 
 module.exports = app;

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Search, ShoppingCart, User, Menu, X, Heart, Store, LogOut, Package, MessageSquare } from 'lucide-react';
+import navLogo from '../assets/images/navlogo.png';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, isSeller } = useAuth();
@@ -41,10 +42,14 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">N</span>
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img
+                src={navLogo}
+                alt="Navrang Logo"
+                className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
+              />
             </div>
-            <span className="text-2xl font-bold festive-gradient-text">Navrang</span>
+            <span className="text-2xl font-bold festive-gradient-text hidden sm:inline">Navrang</span>
           </Link>
 
           {/* Desktop Search */}
@@ -54,7 +59,7 @@ const Navbar = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for Navratri outfits..."
+                placeholder="Search for Festive outfits..."
                 className="form-input w-full pr-10"
               />
               <button

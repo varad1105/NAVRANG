@@ -1,43 +1,69 @@
 import React from 'react';
-import { Sparkles, Heart, Users, Award } from 'lucide-react';
+import { Heart, Users, Award } from 'lucide-react';
+import navLogo from '../assets/images/navlogo.png';
+import varadImage from '../assets/images/varad.jpg';
+import shubdhaImage from '../assets/images/shubdha.jpeg';
+import satyamImage from '../assets/images/satyam.jpeg';
 
 const About = () => {
+  // Placeholder function for missing images
+  const handleImageError = (e) => {
+    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3Ccircle cx="50" cy="35" r="20" fill="%23d1d5db"/%3E%3Cpath d="M30 70 Q30 60 50 60 Q70 60 70 70 L70 90 L30 90 Z" fill="%23d1d5db"/%3E%3C/svg%3E';
+  };
+
+  // Team data
+  const teamMembers = [
+    {
+      name: 'Varad Kengale',
+      role: 'Team Leader',
+      description: 'Passionate about bringing traditional fashion to modern celebrations',
+      image: varadImage
+    },
+    {
+      name: 'Shubdha Anap',
+      role: 'Management',
+      description: 'Creating innovative designs that blend tradition with contemporary style',
+      image: shubdhaImage
+    },
+    {
+      name: 'Satyam Gaikwad',
+      role: 'Customer Experience Lead',
+      description: 'Ensuring every customer has a memorable shopping experience',
+      image: satyamImage
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-white" />
+            <div className="w-20 h-20 flex items-center justify-center">
+              <img
+                src={navLogo}
+                alt="Navrang Logo"
+                className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
+              />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            About <span className="festive-gradient-text">Navrang Navratri</span>
+            About <span className="festive-gradient-text">Navrang</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Celebrating the vibrant spirit of Navratri with authentic traditional and festive fashion
-          </p>
         </div>
 
         {/* Our Story */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">About us</h2>
           <div className="prose max-w-none text-gray-600">
             <p className="mb-4">
-              Founded in 2020, Navrang Navratri began with a simple mission: to bring the joy and 
-              authenticity of traditional Navratri attire to every celebration. What started as a 
-              small collection of handpicked outfits has grown into a comprehensive platform for 
-              festive fashion.
+             We are a team of three TY B.Tech students passionate about technology, creativity, and solving real-world problems through innovative web solutions. This website is a part of our academic project, where we aim to combine our learning with practical implementation.
             </p>
             <p className="mb-4">
-              We understand that Navratri is more than just a festival - it's a celebration of 
-              culture, tradition, and community. That's why every piece in our collection is 
-              carefully selected to honor the rich heritage while embracing contemporary styles.
+           Our goal is to create a platform that is simple, user-friendly, and meaningful for users. Throughout this journey, we have applied our knowledge of web development, UI/UX design, and modern technologies to build a functional and efficient system.
             </p>
             <p>
-              Today, Navrang Navratri serves thousands of customers across the country, helping 
-              them celebrate Garba, Dandiya, and other Navratri festivities with style and grace.
+             This project reflects our teamwork, dedication, and continuous effort to learn and grow as aspiring engineers.
             </p>
           </div>
         </div>
@@ -46,7 +72,9 @@ const About = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <div className="bg-white rounded-lg shadow-sm p-6 text-center">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-6 h-6 text-orange-600" />
+              <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">Authenticity</h3>
             <p className="text-sm text-gray-600">
@@ -108,34 +136,28 @@ const About = () => {
           </div>
         </div>
 
-        {/* Team */}
+        {/* Team Section */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Meet Our Team</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Meet Our Team</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Priya Patel</h3>
-              <p className="text-sm text-gray-600 mb-2">Founder & CEO</p>
-              <p className="text-sm text-gray-500">
-                Passionate about bringing traditional fashion to modern celebrations
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Rahul Sharma</h3>
-              <p className="text-sm text-gray-600 mb-2">Head of Design</p>
-              <p className="text-sm text-gray-500">
-                Creating innovative designs that blend tradition with contemporary style
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Anjali Desai</h3>
-              <p className="text-sm text-gray-600 mb-2">Customer Experience Lead</p>
-              <p className="text-sm text-gray-500">
-                Ensuring every customer has a memorable shopping experience
-              </p>
-            </div>
+            {teamMembers.map((member, index) => (
+              <div key={index} className="flex flex-col items-center text-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500 shadow-lg mb-4 flex items-center justify-center bg-gray-100">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={handleImageError}
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{member.name}</h3>
+                <p className="text-sm font-medium text-orange-600 mb-3">{member.role}</p>
+                <p className="text-sm text-gray-600">
+                  {member.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 

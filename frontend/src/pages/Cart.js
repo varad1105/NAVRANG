@@ -87,6 +87,10 @@ const Cart = () => {
     return calculateSubtotal() + calculateShipping();
   };
 
+  const handleCheckoutWithRazorpay = () => {
+    navigate('/razorpay-payment');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -324,6 +328,46 @@ const Cart = () => {
             </div>
           </div>
         )}
+
+        {/* Checkout Section */}
+        <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+          <h3 className="text-2xl font-bold mb-4">Order Summary</h3>
+          
+          {/* Price Details */}
+          <div className="space-y-3 mb-6">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal:</span>
+              <span>₹{calculateSubtotal().toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Shipping:</span>
+              <span>₹{calculateShipping()}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Tax:</span>
+              <span>₹{0}</span>
+            </div>
+            <hr />
+            <div className="flex justify-between text-xl font-bold">
+              <span>Total:</span>
+              <span className="text-orange-600">₹{calculateTotal().toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Payment Method Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-semibold mb-3">Select Payment Method</label>
+            <div className="space-y-2">
+              <button
+                onClick={handleCheckoutWithRazorpay}
+                className="w-full flex items-center justify-between p-4 border-2 border-orange-500 rounded-lg hover:bg-orange-50 transition font-semibold text-orange-600"
+              >
+                <span>Pay with Razorpay</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

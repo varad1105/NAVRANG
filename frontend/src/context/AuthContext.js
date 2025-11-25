@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'http://192.168.0.102:5000/api',
 });
 
 // Auth context
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     loadUser();
-  }, []); // Only run once on mount
+  }, [state.token]); // Include state.token as dependency
 
   // Login function
   const login = useCallback(async (email, password) => {

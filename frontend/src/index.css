@@ -292,3 +292,14 @@ body {
     font-size: 0.875rem;
   }
 }
+
+/* Fix SVG auto dimension errors */
+svg {
+  width: 1em;
+  height: 1em;
+}
+
+svg:not([width]):not([height]) {
+  width: 1em;
+  height: 1em;
+}

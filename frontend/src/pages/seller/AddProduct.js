@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowLeft, Save, X, Upload } from 'lucide-react';
+import { ArrowLeft, Save, X, Camera, CameraOff } from 'lucide-react';
 
 const AddProduct = () => {
   const { api, isSeller } = useAuth();
@@ -25,7 +25,7 @@ const AddProduct = () => {
     sizes: ['S', 'M', 'L'],
     colors: ['Red', 'Blue'],
     images: [{
-      url: 'https://picsum.photos/seed/navrang' + Date.now() + '/400/500.jpg',
+      url: `https://picsum.photos/seed/navrang-${Math.random().toString(36).substr(2, 9)}/400/500.jpg`,
       alt: 'Product image'
     }],
     stock: '1',
@@ -39,6 +39,17 @@ const AddProduct = () => {
   const [newColor, setNewColor] = useState('');
   const [newTag, setNewTag] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  
+  // Camera states
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [cameraError, setCameraError] = useState('');
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  
+  // Check browser compatibility
+  const isCameraSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
   // Image management functions
   const handleAddImage = () => {
@@ -50,13 +61,95 @@ const AddProduct = () => {
       setNewImageUrl('');
     }
   };
-
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index)
     });
   };
+
+  // Camera functions
+  const startCamera = async () => {
+    try {
+      setCameraError('');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setShowCamera(true);
+    } catch (error) {
+      console.error('Camera access error:', error);
+      let errorMessage = 'Unable to access camera.';
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Camera permission was denied. Please allow camera access in your browser settings and try again.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No camera device found. Please ensure your device has a camera connected.';
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = 'Camera is not supported by your browser. Please try using a modern browser like Chrome, Firefox, or Safari.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Camera is already in use by another application. Please close other apps using the camera and try again.';
+      } else {
+        errorMessage = `Camera access failed: ${error.message}`;
+      }
+      
+      setCameraError(errorMessage);
+    }
+  };
+
+  const stopCamera = useCallback(() => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setShowCamera(false);
+    setCapturedImage(null);
+  }, [cameraStream]);
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setCapturedImage(imageDataUrl);
+    }
+  };
+
+  const useCapturedImage = () => {
+    if (capturedImage) {
+      setFormData({
+        ...formData,
+        images: [...formData.images, { url: capturedImage, alt: 'Product image - camera capture' }]
+      });
+      stopCamera();
+    }
+  };
+
+  const retakePhoto = () => {
+    setCapturedImage(null);
+  };
+
+  // Cleanup camera stream on component unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   if (!isSeller()) {
     return (
@@ -207,7 +300,7 @@ const AddProduct = () => {
             to="/seller/products"
             className="inline-flex items-center text-orange-500 hover:text-orange-600 mb-4"
           >
-            <ArrowLeft size={20} className="mr-2" />
+            <ArrowLeft size={20} width={20} height={20} className="mr-2" />
             Back to Products
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Product</h1>
@@ -280,8 +373,19 @@ const AddProduct = () => {
               {/* Current Images */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Images
+                  Current Images ({formData.images.length})
                 </label>
+                
+                {/* Debug Info */}
+                <div className="mb-3 p-2 bg-gray-50 rounded text-xs">
+                  <strong>Debug:</strong> Current image URLs: 
+                  <ul className="mt-1">
+                    {formData.images.map((img, idx) => (
+                      <li key={idx} className="text-blue-600 break-all">{img.url}</li>
+                    ))}
+                  </ul>
+                </div>
+                
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {formData.images.map((image, index) => (
                     <div key={index} className="relative group">
@@ -289,13 +393,20 @@ const AddProduct = () => {
                         src={image.url}
                         alt={image.alt}
                         className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          e.target.src = 'https://picsum.photos/seed/fallback/400/500.jpg';
+                          e.target.alt = 'Image failed to load';
+                        }}
+                        onLoad={(e) => {
+                          console.log('Image loaded successfully:', image.url);
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <X size={16} />
+                        <X size={16} width={16} height={16} />
                       </button>
                     </div>
                   ))}
@@ -305,28 +416,147 @@ const AddProduct = () => {
               {/* Add New Image */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add Image URL
+                  Add Product Images
                 </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="form-input flex-1"
-                    placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="btn-festive px-4 py-2"
-                  >
-                    Add
-                  </button>
+                
+                {/* Image Input Options */}
+                <div className="space-y-4">
+                  {/* URL Input */}
+                  <div>
+                    <div className="flex space-x-2">
+                      <input
+                        type="url"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        className="form-input flex-1"
+                        placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddImage}
+                        className="btn-festive px-4 py-2"
+                      >
+                        Add URL
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Or use placeholder: https://picsum.photos/seed/yourtext/400/500.jpg
+                    </p>
+                  </div>
+
+                  {/* Camera Option */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-gray-700">Or take a photo with camera</span>
+                      {!isCameraSupported ? (
+                        <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                          Camera not supported
+                        </span>
+                      ) : !showCamera ? (
+                        <button
+                          type="button"
+                          onClick={startCamera}
+                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          <Camera size={16} width={16} height={16} className="mr-2" />
+                          Open Camera
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={stopCamera}
+                          className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                          <CameraOff size={16} width={16} height={16} className="mr-2" />
+                          Close Camera
+                        </button>
+                      )}
+                    </div>
+                    
+                    {!isCameraSupported && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <div className="text-sm text-yellow-800">
+                          <strong>Browser Compatibility:</strong> Camera access requires a modern browser (Chrome 53+, Firefox 36+, Safari 11+). Please update your browser or try a different one.
+                        </div>
+                      </div>
+                    )}
+
+                    {cameraError && (
+                      <div className="alert-error mb-3">
+                        <div className="font-medium mb-1">Camera Access Issue</div>
+                        <div className="text-sm">{cameraError}</div>
+                        <div className="mt-2 text-xs">
+                          <strong>How to enable camera access:</strong>
+                          <ul className="list-disc list-inside mt-1 space-y-1">
+                            <li>Click the camera icon 📷 in your browser's address bar</li>
+                            <li>Select "Allow" for camera permissions</li>
+                            <li>Refresh the page and try again</li>
+                            <li>For mobile: ensure you're using HTTPS or localhost</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Camera View */}
+                    {showCamera && (
+                      <div className="space-y-4">
+                        {!capturedImage ? (
+                          <div>
+                            <div className="relative bg-black rounded-lg overflow-hidden" style={{ maxHeight: '400px' }}>
+                              <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                className="w-full h-full object-contain"
+                                style={{ maxHeight: '400px' }}
+                              />
+                            </div>
+                            <div className="flex justify-center mt-3">
+                              <button
+                                type="button"
+                                onClick={capturePhoto}
+                                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                              >
+                                📸 Capture Photo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                              <img
+                                src={capturedImage}
+                                alt="Captured"
+                                className="w-full h-auto object-contain"
+                                style={{ maxHeight: '400px' }}
+                              />
+                            </div>
+                            <div className="flex justify-center space-x-3 mt-3">
+                              <button
+                                type="button"
+                                onClick={retakePhoto}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                              >
+                                Retake
+                              </button>
+                              <button
+                                type="button"
+                                onClick={useCapturedImage}
+                                className="px-4 py-2 btn-festive"
+                              >
+                                Use This Photo
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Or use placeholder: https://picsum.photos/seed/yourtext/400/500.jpg
-                </p>
               </div>
+              
+              {/* Hidden canvas for image capture */}
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
 
             {/* Categories */}
@@ -462,7 +692,7 @@ const AddProduct = () => {
                       onClick={() => removeSize(size)}
                       className="ml-2 text-orange-600 hover:text-orange-800"
                     >
-                      <X size={14} />
+                      <X size={14} width={14} height={14} />
                     </button>
                   </span>
                 ))}
@@ -497,7 +727,7 @@ const AddProduct = () => {
                       onClick={() => removeColor(color)}
                       className="ml-2 text-blue-600 hover:text-blue-800"
                     >
-                      <X size={14} />
+                      <X size={14} width={14} height={14} />
                     </button>
                   </span>
                 ))}
@@ -532,7 +762,7 @@ const AddProduct = () => {
                       onClick={() => removeTag(tag)}
                       className="ml-2 text-green-600 hover:text-green-800"
                     >
-                      <X size={14} />
+                      <X size={14} width={14} height={14} />
                     </button>
                   </span>
                 ))}
@@ -587,7 +817,7 @@ const AddProduct = () => {
                 </>
               ) : (
                 <>
-                  <Save size={16} className="mr-2" />
+                  <Save size={16} width={16} height={16} className="mr-2" />
                   Add Product
                 </>
               )}

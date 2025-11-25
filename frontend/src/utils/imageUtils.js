@@ -36,10 +36,14 @@ export const handleImageError = (event, width = 300, height = 400) => {
 
 // Create a local SVG placeholder as base64
 export const createLocalPlaceholder = (width, height, text = 'No Image') => {
+  // Ensure width and height are valid numbers
+  const safeWidth = width && width > 0 ? width : 300;
+  const safeHeight = height && height > 0 ? height : 400;
+  
   const svg = `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="${safeWidth}" height="${safeHeight}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="#f3f4f6"/>
-      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="${Math.min(width, height) / 10}" 
+      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="${Math.min(safeWidth, safeHeight) / 10}" 
             fill="#9ca3af" text-anchor="middle" dy=".3em">${text}</text>
     </svg>
   `;
