@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { generateReceipt } from '../utils/receiptGenerator';
 
 const RazorpayPayment = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const RazorpayPayment = () => {
     try {
       // Step 1: Create order on backend
       const { data } = await axios.post(
-        'http://192.168.0.102:5000/api/razorpay/create-order',
+        'http://localhost:5000/api/razorpay/create-order',
         {
           amount: parseFloat(amount),
           currency: 'INR',
@@ -56,14 +57,14 @@ const RazorpayPayment = () => {
         key: data.key_id,
         amount: Math.round(parseFloat(amount) * 100),
         currency: 'INR',
-        name: 'Navrang Navratri',
+        name: 'Navrang',
         description: 'E-Commerce Payment',
         order_id: data.order.id,
         handler: async (response) => {
           try {
             // Step 3: Verify payment on backend
             const verifyResponse = await axios.post(
-              'http://192.168.0.102:5000/api/razorpay/verify-payment',
+              'http://localhost:5000/api/razorpay/verify-payment',
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -76,17 +77,38 @@ const RazorpayPayment = () => {
               }
             );
 
-            if (verifyResponse.data.success) {
-              setSuccess('Payment Successful!');
-              setTimeout(() => {
-                navigate('/payment-success', { 
-                  state: { 
-                    paymentId: response.razorpay_payment_id,
-                    orderId: response.razorpay_order_id
-                  }
-                });
-              }, 2000);
-            }
+              if (verifyResponse.data.success) {
+                setSuccess('Payment Successful!');
+                
+                // Generate and download receipt
+                const receiptData = {
+                  orderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  amount: parseFloat(amount),
+                  status: 'Paid',
+                  items: [
+                    {
+                      name: 'Your Purchase',
+                      quantity: 1,
+                      price: parseFloat(amount)
+                    }
+                  ]
+                };
+                
+                // Generate receipt
+                generateReceipt(receiptData);
+                
+                // Navigate to success page after a short delay
+                setTimeout(() => {
+                  navigate('/payment-success', { 
+                    state: { 
+                      paymentId: response.razorpay_payment_id,
+                      orderId: response.razorpay_order_id,
+                      amount: amount
+                    }
+                  });
+                }, 2000);
+              }
           } catch (err) {
             setError('Payment verification failed');
             navigate('/payment-failed');

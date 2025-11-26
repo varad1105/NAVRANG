@@ -36,7 +36,10 @@ const productSchema = new mongoose.Schema({
   },
   sizes: [{
     type: String,
-    enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL']
+    enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'],
+    set: function(v) {
+      return v ? v.toUpperCase() : v;
+    }
   }],
   colors: [{
     type: String,

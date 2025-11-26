@@ -265,7 +265,7 @@ const Products = () => {
             onClick={() => handleBuyNow(product._id, getFirstValidSize(product.sizes))}
             className="w-full mt-2 bg-green-600 text-white text-center py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
           >
-            🚀 Buy Now (Demo)
+            🚀 Buy Now
           </button>
         </div>
       </div>

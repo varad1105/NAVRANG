@@ -5,19 +5,16 @@ import {
   ShoppingBag, 
   Package, 
   TrendingUp, 
-  Users, 
   AlertCircle,
   ArrowUp,
   ArrowDown,
-  Eye,
   Plus,
   Store,
   BarChart3
 } from 'lucide-react';
 
 const SellerDashboard = () => {
-  const { api, user } = useAuth();
-  
+  const { api, user, isSeller } = useAuth(); // <-- Added isSeller
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalProducts: 0,
@@ -30,13 +27,11 @@ const SellerDashboard = () => {
     recentOrders: [],
     lowStockProducts: []
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
+  // fetchDashboardData declared before useEffect
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -48,6 +43,13 @@ const SellerDashboard = () => {
       setLoading(false);
     }
   };
+
+  // UPDATED useEffect with dependencies
+  useEffect(() => {
+    if (isSeller) {
+      fetchDashboardData();
+    }
+  }, [isSeller]); // fetchDashboardData removed to avoid infinite loop
 
   const StatCard = ({ title, value, icon, change, changeType, color = 'orange' }) => (
     <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-500">
@@ -91,20 +93,19 @@ const SellerDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Seller Dashboard
           </h1>
           <p className="text-gray-600">
-            Welcome back, {user.name}! Here's your business overview.
+            Welcome back, {user?.name}! Here's your business overview.
           </p>
         </div>
 
         {error && (
-          <div className="alert-error mb-6">
-            {error}
-          </div>
+          <div className="alert-error mb-6">{error}</div>
         )}
 
         {/* Stats Grid */}
@@ -143,85 +144,73 @@ const SellerDashboard = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              to="/seller/products/add"
-              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors"
-            >
+            <Link to="/seller/products/add" className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-orange-50">
               <div className="p-2 bg-orange-100 rounded-lg">
                 <Plus className="w-5 h-5 text-orange-600" />
               </div>
-              <span className="font-medium text-gray-900">Add Product</span>
+              <span className="font-medium">Add Product</span>
             </Link>
-            <Link
-              to="/seller/products"
-              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors"
-            >
+
+            <Link to="/seller/products" className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-orange-50">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Store className="w-5 h-5 text-blue-600" />
               </div>
-              <span className="font-medium text-gray-900">Manage Products</span>
+              <span className="font-medium">Manage Products</span>
             </Link>
-            <Link
-              to="/seller/orders"
-              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors"
-            >
+
+            <Link to="/seller/orders" className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-orange-50">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Package className="w-5 h-5 text-green-600" />
               </div>
-              <span className="font-medium text-gray-900">View Orders</span>
+              <span className="font-medium">View Orders</span>
             </Link>
-            <Link
-              to="/seller/analytics"
-              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors"
-            >
+
+            <Link to="/seller/analytics" className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-orange-50">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <BarChart3 className="w-5 h-5 text-purple-600" />
               </div>
-              <span className="font-medium text-gray-900">Analytics</span>
+              <span className="font-medium">Analytics</span>
             </Link>
           </div>
         </div>
 
+        {/* Recent Orders + Low Stock */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Orders */}
           <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-                <Link
-                  to="/seller/orders"
-                  className="text-orange-500 hover:text-orange-600 text-sm font-medium"
-                >
+                <h2 className="text-lg font-semibold">Recent Orders</h2>
+                <Link to="/seller/orders" className="text-orange-500 hover:text-orange-600 text-sm font-medium">
                   View All
                 </Link>
               </div>
             </div>
+
             <div className="p-6">
               {dashboardData.recentOrders.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600">No orders yet</p>
+                  <p>No orders yet</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {dashboardData.recentOrders.map((order) => (
-                    <div key={order._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div key={order._id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">#{order.orderNumber}</p>
+                        <p className="font-medium">#{order.orderNumber}</p>
                         <p className="text-sm text-gray-600">{order.user.name}</p>
                         <p className="text-sm text-gray-500">₹{order.totalAmount.toLocaleString()}</p>
                       </div>
-                      <div className="text-right">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                        order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -229,29 +218,27 @@ const SellerDashboard = () => {
             </div>
           </div>
 
-          {/* Low Stock Products */}
+          {/* Low Stock */}
           <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900">Low Stock Alert</h2>
-                <Link
-                  to="/seller/products"
-                  className="text-orange-500 hover:text-orange-600 text-sm font-medium"
-                >
+                <h2 className="text-lg font-semibold">Low Stock Alert</h2>
+                <Link to="/seller/products" className="text-orange-500 hover:text-orange-600 text-sm font-medium">
                   Manage
                 </Link>
               </div>
             </div>
+
             <div className="p-6">
               {dashboardData.lowStockProducts.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                  <p className="text-gray-600">All products are well stocked</p>
+                  <p>All products are well stocked</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {dashboardData.lowStockProducts.map((product) => (
-                    <div key={product._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div key={product._id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <img
                           src={product.images[0]?.url || 'https://via.placeholder.com/50x50'}
@@ -259,15 +246,14 @@ const SellerDashboard = () => {
                           className="w-12 h-12 object-cover rounded"
                         />
                         <div>
-                          <p className="font-medium text-gray-900">{product.name}</p>
+                          <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-gray-600">Stock: {product.stock}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                          Low Stock
-                        </span>
-                      </div>
+
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                        Low Stock
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -276,33 +262,6 @@ const SellerDashboard = () => {
           </div>
         </div>
 
-        {/* Performance Overview */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-500 mb-2">
-                {dashboardData.stats.activeProducts}
-              </div>
-              <p className="text-sm text-gray-600">Active Products</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-500 mb-2">
-                {dashboardData.stats.completedOrders}
-              </div>
-              <p className="text-sm text-gray-600">Completed Orders</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-500 mb-2">
-                {dashboardData.stats.totalOrders > 0 
-                  ? Math.round((dashboardData.stats.completedOrders / dashboardData.stats.totalOrders) * 100)
-                  : 0
-                }%
-              </div>
-              <p className="text-sm text-gray-600">Success Rate</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

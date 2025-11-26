@@ -8,14 +8,12 @@ import {
   Minus, 
   X, 
   Trash2, 
-  ArrowRight,
-  Heart,
-  Star
+  ArrowRight
 } from 'lucide-react';
 
 const Cart = () => {
   const { isAuthenticated } = useAuth();
-  const { cart, loadCart, updateCartItem, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { cart, loadCart, updateCartItem, removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);

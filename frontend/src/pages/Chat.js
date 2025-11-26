@@ -7,11 +7,8 @@ import {
   Send, 
   Search, 
   User, 
-  Package, 
-  Clock,
   CheckCheck,
-  X,
-  ArrowLeft
+  X
 } from 'lucide-react';
 
 const Chat = () => {
@@ -42,14 +39,22 @@ const Chat = () => {
       navigate('/login');
       return;
     }
-    
-    loadChats();
-  }, [isAuthenticated, navigate, loadChats]);
 
-  useEffect(() => {
-    // Scroll to bottom when new messages arrive
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const fetchData = async () => {
+      await loadChats();
+      if (chats.length > 0 && !currentChat) {
+        await loadChat(chats[0]._id);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated, navigate, loadChats, chats, currentChat, loadChat]);
+
+  // In the useEffect hook, add messagesEndRef to the dependency array
+useEffect(() => {
+  // Scroll to bottom when new messages arrive
+  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages, messagesEndRef]);  // Added messagesEndRef to the dependencies
 
   const handleChatSelect = async (chatId) => {
     setSelectedChatId(chatId);
