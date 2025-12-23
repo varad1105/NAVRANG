@@ -1,7 +1,7 @@
 {
   "name": "navrang-frontend",
   "version": "1.0.0",
-  "description": "Frontend React App for Navrang Navratri E-Commerce",
+  "description": "Frontend React App for Navrang E-Commerce",
   "private": true,
   "dependencies": {
     "@stripe/react-stripe-js": "^2.4.0",

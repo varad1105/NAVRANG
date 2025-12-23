@@ -149,8 +149,43 @@ const sendWelcomeEmail = async (userEmail, userName) => {
 };
 
 
+// Send Order Status Update Email
+const sendStatusUpdateEmail = async (userEmail, orderDetails) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || '"Navrang" <noreply@navrang.com>',
+      to: userEmail,
+      subject: `Order Status Update - #${orderDetails._id}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial; background: #f4f4f4; padding: 20px;">
+          <div style="background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto;">
+            <h1 style="color:#ff6b35; text-align:center;">Navrang Navratri</h1>
+            <h2 style="text-align:center;">Order Status Updated</h2>
+            <p><strong>Order ID:</strong> #${orderDetails._id}</p>
+            <p><strong>Current Status:</strong> ${orderDetails.status}</p>
+            <p style="margin-top:20px;">Thank you for shopping with Navrang.</p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Status Update Email Error:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+
 // Export
 module.exports = {
   sendOrderConfirmationEmail,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  sendStatusUpdateEmail
 };

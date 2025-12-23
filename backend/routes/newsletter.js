@@ -4,23 +4,50 @@ const Newsletter = require("../models/newsletter");
 
 // POST /api/newsletter/subscribe
 router.post("/subscribe", async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    console.log("Received Email:", email); // DEBUG
-
-    if (!email || email.trim() === "") {
-      return res.status(400).json({ error: "Email is required" });
+    // 1. Basic validation and early exit
+    if (!req.body.email || req.body.email.trim() === "") {
+        // Explicitly set 400 Bad Request status
+        return res.status(400).json({ 
+            success: false, 
+            message: "Email is required for subscription." 
+        });
     }
 
-    // Save to DB
-    await Newsletter.create({ email });
+    try {
+        const { email } = req.body;
+        console.log("Received Email for Subscription:", email); // DEBUG
 
-    res.json({ message: "Subscribed successfully!" });
-  } catch (err) {
-    console.error("Newsletter error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
+        // 2. Database Operation
+        // Check if the email already exists to prevent duplicates (UX improvement)
+        const existingSubscriber = await Newsletter.findOne({ email });
+
+        if (existingSubscriber) {
+            // Return 409 Conflict if email is already there
+            return res.status(409).json({ 
+                success: false, 
+                message: "This email is already subscribed to the newsletter." 
+            });
+        }
+        
+        // Save to DB
+        await Newsletter.create({ email });
+
+        // 3. Success Response
+        // Use 201 Created for successfully saving a new resource
+        return res.status(201).json({ 
+            success: true, 
+            message: "Subscribed successfully! Thank you." 
+        });
+
+    } catch (err) {
+        // 4. Detailed Error Handling
+        console.error("Newsletter subscription database error:", err);
+        // Explicitly set 500 Internal Server Error status
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error. Could not process subscription." 
+        });
+    }
 });
 
 module.exports = router;
